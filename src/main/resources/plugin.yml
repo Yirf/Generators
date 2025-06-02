@@ -1,0 +1,6 @@
+name: Generators
+version: '1.0'
+main: me.yirf.generators.Generators
+api-version: '1.21'
+authors: [ Yirf ]
+description: A gen core plugin.

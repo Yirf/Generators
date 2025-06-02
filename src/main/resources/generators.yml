@@ -1,0 +1,4 @@
+generators:
+  WHITE_WOOL:
+     sell: 5
+     drop: WHITE_DYE

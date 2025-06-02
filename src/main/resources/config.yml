@@ -1,0 +1,17 @@
+database:
+  name: ""
+  uri: ""
+
+  auto-save: 5 #how many minutes should it auto save
+
+drop-time: 5 #in seconds
+
+item-layouts:
+  generators:
+    lore:
+      - ""
+      - ""
+      - ""
+      - ""
+      - ""
+      - ""
