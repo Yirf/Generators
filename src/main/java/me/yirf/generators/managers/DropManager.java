@@ -5,9 +5,12 @@ import me.yirf.generators.data.Cache;
 import me.yirf.generators.data.GenData;
 import me.yirf.generators.data.PlayerData;
 import me.yirf.generators.generator.Gens;
+import me.yirf.generators.utils.ItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -23,6 +26,7 @@ public class DropManager {
     private final Gens gens;
     private final Cache<UUID, PlayerData> playerCache;
     private final Cache<String, GenData> gensCache;
+    private final FileConfiguration config;
 
     private final Generators plugin;
 
@@ -32,6 +36,7 @@ public class DropManager {
         this.gensCache = plugin.getGenCache();
         this.plugin = plugin;
         this.gens = plugin.getGens();
+        this.config = plugin.getConfig();
     }
 
     public void start() {
@@ -43,6 +48,7 @@ public class DropManager {
 
                     for (String locKey : locations) {
                         GenData gd = gensCache.get(locKey);
+                        String  id = gd.getIdentifier();
                         if (gd == null || gd.getLocation() == null) continue;
 
                         Location loc = gd.getLocation();
@@ -50,7 +56,11 @@ public class DropManager {
                         if (!world.isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) continue;
 
                         Bukkit.getScheduler().runTask(plugin, () -> {
-                            ItemStack item = gens.getDrop(gd.getIdentifier());
+                            ItemStack item = new ItemUtil.Creator(config, "item-layout.drops", "generator")
+                                    .setId(id)
+                                    .setSell(gens.getSell(id))
+                                    .setMaterial(gens.getMaterial(id))
+                                    .generate();
                             Item dropped = world.dropItem(loc.clone().add(0, 1, 0), item);
                             dropped.setVelocity(new Vector(0, 0, 0));
                         });

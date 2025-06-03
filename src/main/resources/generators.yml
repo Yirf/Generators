@@ -1,4 +1,9 @@
 generators:
   WHITE_WOOL:
-     sell: 5
+     name: "<white><bold>WHITE WOOL"
+     sell: 5.00
      drop: WHITE_DYE
+  BLACK_WOOL:
+    name: "<gray><bold>BLACK WOOL"
+    sell: 5.00
+    drop: BLACK_DYE

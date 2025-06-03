@@ -8,10 +8,22 @@ drop-time: 5 #in seconds
 
 item-layouts:
   generators:
+    name: "<name><reset> <white>Generator"
     lore:
       - ""
+      - "Generators spawn drops that"
+      - "sell for money."
       - ""
+      - "Sell Price: <sell>"
+      - "Upgrade Price: <upgrade>"
       - ""
+      - "<green>Place down"
+  drops:
+    name: "<name><reset> <white>Drop"
+    lore:
       - ""
+      - "Sell drops to earn money."
       - ""
+      - "Sell Price: <sell>"
       - ""
+      - "<green>Right click to /sell"

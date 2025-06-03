@@ -1,6 +1,8 @@
 package me.yirf.generators;
 
 import com.squareup.moshi.Moshi;
+import me.yirf.generators.Handlers.Handler;
+import me.yirf.generators.Handlers.SellHandler;
 import me.yirf.generators.data.*;
 import me.yirf.generators.generator.Gens;
 import me.yirf.generators.listeners.PlayerBlocks;
@@ -16,17 +18,21 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.paper.PaperCommandManager;
+import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
+import org.incendo.cloud.paper.util.sender.Source;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class Generators extends JavaPlugin {
+    public static Generators instance;
+
+    private PaperCommandManager<Source> commandManager;
 
     private FileConfiguration config;
     private FileConfiguration gensConfig;
-    private static final Set<Material> genMaterials = new HashSet<>();
 
     private Gens gens;
 
@@ -39,153 +45,140 @@ public final class Generators extends JavaPlugin {
     private Moshi moshi = new Moshi.Builder()
             .add(Location.class, new LocationAdapter())
             .build();
+
     private AutoSave autoSave;
     private DropManager dropManager;
 
+    public static final Set<Material> genMaterials = new HashSet<>();
     private final PluginManager pm = getServer().getPluginManager();
 
     @Override
     public void onEnable() {
+        instance = this;
         saveDefaultConfig();
         this.config = getConfig();
-        if (!new File(getDataFolder(), "generators.yml").exists()) {
+
+        commandManager = PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
+                .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
+                .buildOnEnable(this);
+
+        // Load gens config
+        File gensFile = new File(getDataFolder(), "generators.yml");
+        if (!gensFile.exists()) {
             saveResource("generators.yml", false);
         }
-        this.gensConfig = YamlConfiguration.loadConfiguration(
-                new File(getDataFolder(), "generators.yml")
-        );
-        this.gensConfig = YamlConfiguration.loadConfiguration(
-                new File(getDataFolder(), "generators.yml")
-        );
+        this.gensConfig = YamlConfiguration.loadConfiguration(gensFile);
         this.gens = new Gens(gensConfig);
 
-        if (config.getString("database.uri").equalsIgnoreCase("") ||
-                config.getString("database.name").equalsIgnoreCase(""))
-        {
-            getServer().getLogger().severe("Please input your mongo details before running.");
+        // Validate Mongo config
+        if (config.getString("database.uri").isEmpty() ||
+                config.getString("database.name").isEmpty()) {
+            getLogger().severe("Please input your MongoDB details before running.");
             pm.disablePlugin(this);
+            return;
         }
 
         this.mongo = new Mongo(
                 config.getString("database.uri"),
-                config.getString("database.name"));
+                config.getString("database.name")
+        );
         mongo.connect();
 
-        playerRepo = new Repository<>(
-                moshi, mongo.getDatabase(),
-                "playerData",
-                PlayerData.class);
-        gensRepo = new Repository<>(moshi,
-                mongo.getDatabase(),
-                "gensData",
-                GenData.class);
-        gensCache = new Cache<>(gensRepo);
+        // Initialize Repositories and Caches
+        playerRepo = new Repository<>(moshi, mongo.getDatabase(), "playerData", PlayerData.class);
+        gensRepo = new Repository<>(moshi, mongo.getDatabase(), "gensData", GenData.class);
         playerCache = new Cache<>(playerRepo);
+        gensCache = new Cache<>(gensRepo);
 
+        // Init systems
         createSchedules();
         registerListeners();
-        load();
+        loadGenerators();
+
+        // Cache online players
+        preloadOnlinePlayers();
+
+        // Register commands
+        // this.commandManager = new PaperCommandManager<>(this); <-- if using cloud or similar
+        // getHandlers().forEach(this::registerCommandsForHandler);
     }
 
     @Override
     public void onDisable() {
-        for (UUID uuid: playerCache.keys()) {
-            PlayerData pd = playerCache.get(uuid);
-            playerRepo.put(uuid, pd);
+        // Save all cached player and generator data
+        playerCache.keys().forEach(uuid -> {
+            playerRepo.put(uuid, playerCache.get(uuid));
             playerCache.remove(uuid);
-        }
-        for (String loc : gensCache.keys()) {
-            GenData gd = gensCache.get(loc);
-            gensRepo.put(loc, gd);
+        });
+        gensCache.keys().forEach(loc -> {
+            gensRepo.put(loc, gensCache.get(loc));
             gensCache.remove(loc);
-        }
-        autoSave.stop();
-    }
+        });
 
-    public Repository<UUID, PlayerData> getPlayerRepo() {
-        return playerRepo;
-    }
-
-    public Repository<String, GenData> getGenRepo() {
-        return gensRepo;
-    }
-
-    public Cache<UUID, PlayerData> getPlayerCache() {
-        return playerCache;
-    }
-
-    public Cache<String, GenData> getGenCache() {
-        return gensCache;
-    }
-
-    public FileConfiguration getGensConfig() {
-        return gensConfig;
-    }
-
-    public Gens getGens() {return gens;}
-
-    public static Set<Material> getGenMaterials() {
-        return genMaterials;
+        if (autoSave != null) autoSave.stop();
     }
 
     private void registerListeners() {
-        pm.registerEvents(
-                new PlayerConnections(
-                        playerRepo,
-                        playerCache),
-                this);
-        pm.registerEvents(
-                new PlayerBlocks(
-                        playerCache,
-                        gensCache,
-                        gens),
-                this);
+        pm.registerEvents(new PlayerConnections(playerRepo, playerCache), this);
+        pm.registerEvents(new PlayerBlocks(playerCache, gensCache, gens), this);
     }
 
-    private void load() {
+    private void loadGenerators() {
         ConfigurationSection section = gensConfig.getConfigurationSection("generators");
-
-        Set<String> keys = section.getKeys(false);
-        if (section == null) return;
-        if (keys == null) return;
-
-        for (String key: keys) {
-            genMaterials.add(
-                    Material.valueOf(key)
-            );
+        if (section == null) {
+            getLogger().warning("No generators found in generators.yml.");
+            return;
         }
 
-        plugmanIsNotCool();
+        for (String key : section.getKeys(false)) {
+            try {
+                genMaterials.add(Material.valueOf(key));
+            } catch (IllegalArgumentException ex) {
+                getLogger().warning("Invalid material in generators.yml: " + key);
+            }
+        }
     }
 
-    private void plugmanIsNotCool() {
+    private void preloadOnlinePlayers() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
-            PlayerData pd = new PlayerData();
-            if (playerRepo.get(uuid) != null) {
-                pd = playerRepo.get(uuid);
+            PlayerData data = playerRepo.get(uuid);
+            if (data == null) {
+                data = new PlayerData();
             }
-
-            playerCache.set(uuid, pd);
+            playerCache.set(uuid, data);
         }
     }
 
     private void createSchedules() {
-        this.autoSave = new AutoSave(
-                config.getLong("database.auto-save"),
-                playerCache, playerRepo,
-                gensCache, gensRepo
-        );
+        long saveInterval = config.getLong("database.auto-save", 300L);
+        this.autoSave = new AutoSave(saveInterval, playerCache, playerRepo, gensCache, gensRepo);
         autoSave.start();
 
-        if (config.getLong("drop-time") < 1) {
-            this.getLogger().severe("Please make sure your drop-time is >= 1.");
+        long dropTime = config.getLong("drop-time", 0);
+        if (dropTime < 1) {
+            getLogger().severe("Please make sure your drop-time is >= 1.");
             pm.disablePlugin(this);
+            return;
         }
-        this.dropManager = new DropManager(
-                config.getLong("drop-time"),
-                this
-        );
+        this.dropManager = new DropManager(dropTime, this);
         dropManager.start();
     }
+
+    private void registerCommandsForHandler(Handler handler) {
+        if (commandManager == null) return;
+        handler.commands().forEach(command -> commandManager.command(command.build(commandManager)));
+    }
+
+    private List<Handler> getHandlers() {
+        return List.of(new SellHandler(getConfig()));
+    }
+
+    public Repository<UUID, PlayerData> getPlayerRepo() { return playerRepo; }
+    public Repository<String, GenData> getGenRepo() { return gensRepo; }
+    public Cache<UUID, PlayerData> getPlayerCache() { return playerCache; }
+    public Cache<String, GenData> getGenCache() { return gensCache; }
+    public FileConfiguration getGensConfig() { return gensConfig; }
+    public Gens getGens() { return gens; }
+    public static Set<Material> getGenMaterials() { return genMaterials; }
 }

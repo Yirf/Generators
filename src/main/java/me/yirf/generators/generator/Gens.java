@@ -20,6 +20,10 @@ public class Gens {
         return config.getDouble("generators." + id + ".sell");
     }
 
+    public String getName(String id) {
+        return config.getString("generators." + id + ".name");
+    }
+
     public ItemStack getDrop(String id) {
         Material material = Material.valueOf(config.getString("generators." + id + ".drop"));
         return new ItemStack(material);

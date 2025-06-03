@@ -19,6 +19,7 @@ repositories {
         name = "sonatype"
         url = "https://oss.sonatype.org/content/groups/public/"
     }
+    maven {url = "https://mvn.exceptionflug.de/repository/exceptionflug-public/"}
 }
 
 dependencies {
@@ -27,8 +28,8 @@ dependencies {
     implementation("org.mongodb:bson:4.5.0")
     implementation("org.mongodb:mongodb-driver-sync:4.5.0")
     implementation("org.mongodb:mongodb-driver-legacy:4.5.0")
-
     implementation("com.squareup.moshi:moshi:1.15.2")
+    compileOnly("org.incendo:cloud-paper:2.0.0-beta.10")
 }
 
 tasks {
