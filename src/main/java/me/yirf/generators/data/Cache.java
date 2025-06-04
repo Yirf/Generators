@@ -6,13 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Cache<K, V> {
 
     private ConcurrentHashMap<K, V> data = new ConcurrentHashMap<K, V>();
-    private Repository<K, V> repository;
-
-    public Cache(
-            Repository<K, V> repository
-    ) {
-        this.repository = repository;
-    }
 
     public synchronized void set(K key, V value) {
         data.put(key, value);

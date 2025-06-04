@@ -10,12 +10,12 @@ public class PersistentManager {
 
     private final ItemStack item;
 
-    class DataTypes {
+    public static class DataTypes {
         public static final PersistentDataType<String,String> STRING = PersistentDataType.STRING;
         public static final PersistentDataType<Double, Double> DOUBLE = PersistentDataType.DOUBLE;
     }
 
-    class Keys {
+    public static class Keys {
         public static final NamespacedKey IDENTIFIR = new NamespacedKey(Generators.instance, "gens.id");
         public static final NamespacedKey SELL = new NamespacedKey(Generators.instance, "gens.sell");
     }
@@ -29,7 +29,7 @@ public class PersistentManager {
     }
 
     public Double getSell() {
-        return pdc().getOrDefault(Keys.SELL, DataTypes.DOUBLE, 1.00D);
+        return pdc().get(Keys.SELL, DataTypes.DOUBLE);
     }
 
     public PersistentDataContainer pdc() {

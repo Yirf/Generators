@@ -27,3 +27,8 @@ item-layouts:
       - "Sell Price: <sell>"
       - ""
       - "<green>Right click to /sell"
+messages:
+  sell:
+    - ""
+    - "You sold <amount> drops for <earned> cash!"
+    - ""

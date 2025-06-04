@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -77,7 +78,18 @@ public class ItemUtil {
             meta.displayName(fullName);
 
             if (identifier != null) {
-                meta.getPersistentDataContainer().set();
+                meta.getPersistentDataContainer().set(
+                        PersistentManager.Keys.IDENTIFIR,
+                        PersistentManager.DataTypes.STRING,
+                        identifier
+                );
+            }
+            if (sell != null) {
+                meta.getPersistentDataContainer().set(
+                        PersistentManager.Keys.SELL,
+                        PersistentManager.DataTypes.DOUBLE,
+                        sell
+                );
             }
 
             item.setItemMeta(meta);

@@ -87,8 +87,8 @@ public final class Generators extends JavaPlugin {
         // Initialize Repositories and Caches
         playerRepo = new Repository<>(moshi, mongo.getDatabase(), "playerData", PlayerData.class);
         gensRepo = new Repository<>(moshi, mongo.getDatabase(), "gensData", GenData.class);
-        playerCache = new Cache<>(playerRepo);
-        gensCache = new Cache<>(gensRepo);
+        playerCache = new Cache<>(); //removed repositories from constructor, may have broken mongo idk
+        gensCache = new Cache<>();
 
         // Init systems
         createSchedules();
@@ -171,14 +171,13 @@ public final class Generators extends JavaPlugin {
     }
 
     private List<Handler> getHandlers() {
-        return List.of(new SellHandler(getConfig()));
+        return List.of(
+                new SellHandler(gensConfig, playerCache)
+        );
     }
 
-    public Repository<UUID, PlayerData> getPlayerRepo() { return playerRepo; }
-    public Repository<String, GenData> getGenRepo() { return gensRepo; }
     public Cache<UUID, PlayerData> getPlayerCache() { return playerCache; }
     public Cache<String, GenData> getGenCache() { return gensCache; }
-    public FileConfiguration getGensConfig() { return gensConfig; }
     public Gens getGens() { return gens; }
     public static Set<Material> getGenMaterials() { return genMaterials; }
 }
