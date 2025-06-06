@@ -9,3 +9,5 @@ This is a gen core, code is located on master branch.
 - [ ] Fixed DropManager class
 - [ ] Add block nbt support
 - [ ] Added way to get multipliers through external code
+- [ ] Added give commands
+- [ ] Make PlayerHistory configurable
