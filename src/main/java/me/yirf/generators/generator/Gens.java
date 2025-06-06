@@ -28,4 +28,9 @@ public class Gens {
         Material material = Material.valueOf(config.getString("generators." + id + ".drop"));
         return new ItemStack(material);
     }
+
+    public Material getDropMaterial(String id) {
+        Material material = Material.valueOf(config.getString("generators." + id + ".drop"));
+        return material;
+    }
 }

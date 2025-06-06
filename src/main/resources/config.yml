@@ -32,6 +32,11 @@ item-layouts:
       - "<green>Right click to /sell"
 messages:
   sell:
+    - "<dark_gray><underlined>                     "
+    - "<green><bold>SELL REPORT"
     - ""
-    - "You sold <amount> drops for <earned> cash!"
-    - ""
+    - "You sold <green><amount><reset> drops for <green>$<earned><reset> cash!"
+    - "<dark_gray><underlined>                     "
+  sell-empty: "<red>You have nothing to sell."
+  pickup: "<green>You picked up a generator!"
+  placed: "<green>You picked up a generator!"

@@ -39,9 +39,13 @@ public class SellHandler implements Handler {
     }
 
     public void sellItems(Player player, int amount, double earned) {
+        if (amount == 0) {
+            player.sendMessage(emessenger.fromConfig("messages.sell-empty"));
+            return;
+        }
         player.sendMessage(emessenger.fromConfig(
                 "messages.sell",
-                List.of("sell", "amount"),
+                List.of("amount", "earned"),
                 List.of("" + amount, "" + earned)
         ));
 

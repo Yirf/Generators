@@ -41,6 +41,7 @@ public class DropManager {
     }
 
     public void start() {
+        Bukkit.broadcastMessage("starting dropmanager!");
         scheduler.scheduleAtFixedRate(() -> {
             CompletableFuture.runAsync(() -> {
                 for (UUID uuid : playerCache.keys()) {
@@ -59,12 +60,14 @@ public class DropManager {
                         ItemStack item = new ItemUtil.Creator(config, "item-layout.drops", gens.getName(id))
                                 .setId(id)
                                 .setSell(gens.getSell(id))
-                                .setMaterial(gens.getMaterial(id))
+                                .setMaterial(gens.getDropMaterial(id))
                                 .setPlaceholders(List.of("sell"))
                                 .setValues(List.of("" +  gens.getSell(id)))
                                 .generate();
 
+                        Bukkit.broadcastMessage("what the heck!");
                         Bukkit.getScheduler().runTask(plugin, () -> {
+                            Bukkit.broadcastMessage("Droppoing an item! " + item.toString());
                              world.dropItem(loc.clone().add(0, 1, 0), item)
                                      .setVelocity(new Vector(0,0,0));
                         });

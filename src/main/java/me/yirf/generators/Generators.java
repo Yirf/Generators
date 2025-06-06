@@ -1,6 +1,7 @@
 package me.yirf.generators;
 
 import com.squareup.moshi.Moshi;
+import me.yirf.generators.Handlers.AdminHandler;
 import me.yirf.generators.Handlers.Handler;
 import me.yirf.generators.Handlers.SellHandler;
 import me.yirf.generators.data.*;
@@ -17,6 +18,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.incendo.cloud.execution.ExecutionCoordinator;
@@ -32,8 +34,8 @@ public final class Generators extends JavaPlugin {
 
     private PaperCommandManager<Source> commandManager;
 
-    private FileConfiguration config;
-    private FileConfiguration gensConfig;
+    public FileConfiguration config;
+    public FileConfiguration gensConfig;
 
     private Gens gens;
 
@@ -43,7 +45,7 @@ public final class Generators extends JavaPlugin {
     private Cache<String, GenData> gensCache;
 
     private Mongo mongo;
-    private Moshi moshi = new Moshi.Builder()
+    private final Moshi moshi = new Moshi.Builder()
             .add(Location.class, new LocationAdapter())
             .build();
 
@@ -59,22 +61,10 @@ public final class Generators extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
         this.config = getConfig();
+        emessenger = new EMessenger(config);
 
-        commandManager = PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
-                .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
-                .buildOnEnable(this);
-
-        // Load gens config
-        File gensFile = new File(getDataFolder(), "generators.yml");
-        if (!gensFile.exists()) {
-            saveResource("generators.yml", false);
-        }
-        this.gensConfig = YamlConfiguration.loadConfiguration(gensFile);
-        this.gens = new Gens(gensConfig);
-
-        // Validate Mongo config
-        if (config.getString("database.uri").isEmpty() ||
-                config.getString("database.name").isEmpty()) {
+        // Early exit on config error
+        if (config.getString("database.uri").isEmpty() || config.getString("database.name").isEmpty()) {
             getLogger().severe("Please input your MongoDB details before running.");
             pm.disablePlugin(this);
             return;
@@ -86,20 +76,21 @@ public final class Generators extends JavaPlugin {
         );
         mongo.connect();
 
-        // Initialize Repositories and Caches
+        // Set up repositories and cache before load
         playerRepo = new Repository<>(moshi, mongo.getDatabase(), "playerData", PlayerData.class);
         gensRepo = new Repository<>(moshi, mongo.getDatabase(), "gensData", GenData.class);
-        playerCache = new Cache<>(); //removed repositories from constructor, may have broken mongo idk
+        playerCache = new Cache<>();
         gensCache = new Cache<>();
 
-        createSchedules();
-        registerListeners();
-        loadGenerators();
-        preloadOnlinePlayers();
+        commandManager = PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
+                .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
+                .buildOnEnable(this);
 
-        emessenger = new EMessenger(gensConfig);
         List<Handler> handlers = getHandlers();
         handlers.forEach(this::registerCommandsForHandler);
+
+        createSchedules();
+        load(); // everything safe now
     }
 
     @Override
@@ -115,6 +106,28 @@ public final class Generators extends JavaPlugin {
         });
 
         if (autoSave != null) autoSave.stop();
+    }
+
+    public void load() {
+        File gensFile = new File(getDataFolder(), "generators.yml");
+        if (!gensFile.exists()) {
+            saveResource("generators.yml", false);
+        }
+        this.gensConfig = YamlConfiguration.loadConfiguration(gensFile);
+
+        reloadConfig();
+        config = getConfig();
+        this.gens = new Gens(gensConfig);
+        emessenger.setConfig(config);
+        loadGenerators();
+
+        unregisterListeners();
+        registerListeners();
+    }
+
+    private void unregisterListeners() {
+        if (HandlerList.getHandlerLists().isEmpty()) return;
+        HandlerList.unregisterAll(this);
     }
 
     private void registerListeners() {
@@ -138,23 +151,12 @@ public final class Generators extends JavaPlugin {
         }
     }
 
-    private void preloadOnlinePlayers() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            UUID uuid = player.getUniqueId();
-            PlayerData data = playerRepo.get(uuid);
-            if (data == null) {
-                data = new PlayerData();
-            }
-            playerCache.set(uuid, data);
-        }
-    }
-
     private void createSchedules() {
-        long saveInterval = config.getLong("database.auto-save", 300L);
+        long saveInterval = config.getLong("database.auto-save", 5L);
         this.autoSave = new AutoSave(saveInterval, playerCache, playerRepo, gensCache, gensRepo);
         autoSave.start();
 
-        long dropTime = config.getLong("drop-time", 0);
+        long dropTime = config.getLong("drop-time", 5L);
         if (dropTime < 1) {
             getLogger().severe("Please make sure your drop-time is >= 1.");
             pm.disablePlugin(this);
@@ -171,7 +173,8 @@ public final class Generators extends JavaPlugin {
 
     private List<Handler> getHandlers() {
         return List.of(
-                new SellHandler(gensConfig, playerCache, emessenger)
+                new SellHandler(gensConfig, playerCache, emessenger),
+                new AdminHandler(this, emessenger)
         );
     }
 

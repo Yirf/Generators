@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 
@@ -40,8 +41,26 @@ public class PlayerBlocks implements Listener {
         this.gens = gens;
     }
 
+//    @EventHandler
+//    public void onBlockBreak(BlockBreakEvent event) {
+//        UUID uuid = event.getPlayer().getUniqueId();
+//        Block block = event.getBlock();
+//
+//        if (!genMaterials.contains(block.getType())) return;
+//
+//        String locString = LocationAdapter.toString(block.getLocation());
+//        GenData gd = gensCache.get(locString);
+//        if (gd == null) return;
+//
+//        if (gd.getOwner() == uuid) {
+//            playerCache.get(uuid).removeGen(locString);
+//            gensCache.remove(locString);
+////            event.getPlayer().getInventory().addItem(gens.getMaterial(gd.getIdentifier()));
+//        }
+//    }
+
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
+    public void onBlockDamage(BlockDamageEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         Block block = event.getBlock();
 
@@ -54,7 +73,8 @@ public class PlayerBlocks implements Listener {
         if (gd.getOwner() == uuid) {
             playerCache.get(uuid).removeGen(locString);
             gensCache.remove(locString);
-            event.getPlayer().getInventory().addItem(gens.getDrop(gd.getIdentifier()));
+            block.setType(Material.AIR);
+
         }
     }
 

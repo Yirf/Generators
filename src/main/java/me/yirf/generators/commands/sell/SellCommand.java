@@ -2,8 +2,6 @@ package me.yirf.generators.commands.sell;
 
 import me.yirf.generators.Handlers.SellHandler;
 import me.yirf.generators.commands.ArgumentCommand;
-import me.yirf.generators.data.Cache;
-import me.yirf.generators.data.PlayerData;
 import me.yirf.generators.managers.PersistentManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -13,10 +11,6 @@ import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.paper.util.sender.PlayerSource;
 import org.incendo.cloud.paper.util.sender.Source;
-
-import java.util.UUID;
-
-//something im missing for  loading plugin to enable this command api im 90% sure.
 
 public record SellCommand(SellHandler handler, FileConfiguration config) implements ArgumentCommand {
 
@@ -33,6 +27,8 @@ public record SellCommand(SellHandler handler, FileConfiguration config) impleme
         int amount = 0;
 
         for (ItemStack item : sender.getInventory().getContents()) {
+            if (item == null) continue;
+
             PersistentManager pdc = new PersistentManager(item);
             if (pdc.getSell() != null) {
                 sender.getInventory().remove(item);
