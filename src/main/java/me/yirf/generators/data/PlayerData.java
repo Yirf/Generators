@@ -9,15 +9,18 @@ public class PlayerData {
 
     private Set<String> locations;
     private PlayerHistory history;
+    private double money;
 
-    public PlayerData(Set<String> locations, PlayerHistory history) {
+    public PlayerData(Set<String> locations, PlayerHistory history, double money) {
         this.locations = locations;
         this.history = history;
+        this.money = money;
     }
 
     public PlayerData() {
         locations = new HashSet<>();
         history = new PlayerHistory();
+        money = 0;
     }
 
     public Set<String> getLocations() {

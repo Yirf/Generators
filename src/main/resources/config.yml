@@ -6,6 +6,9 @@ database:
 
 drop-time: 5 #in seconds
 
+#not coded, need vault api
+currency-type: PLUGIN #can be VAULT or PLUGIN (PLUGIN makes currency stored in this plugin)
+
 item-layouts:
   generators:
     name: "<name><reset> <white>Generator"

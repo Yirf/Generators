@@ -8,6 +8,7 @@ import me.yirf.generators.generator.Gens;
 import me.yirf.generators.listeners.PlayerBlocks;
 import me.yirf.generators.listeners.PlayerConnections;
 import me.yirf.generators.managers.DropManager;
+import me.yirf.generators.utils.EMessenger;
 import me.yirf.generators.utils.LocationAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -48,6 +49,7 @@ public final class Generators extends JavaPlugin {
 
     private AutoSave autoSave;
     private DropManager dropManager;
+    private EMessenger emessenger;
 
     public static final Set<Material> genMaterials = new HashSet<>();
     private final PluginManager pm = getServer().getPluginManager();
@@ -90,17 +92,14 @@ public final class Generators extends JavaPlugin {
         playerCache = new Cache<>(); //removed repositories from constructor, may have broken mongo idk
         gensCache = new Cache<>();
 
-        // Init systems
         createSchedules();
         registerListeners();
         loadGenerators();
-
-        // Cache online players
         preloadOnlinePlayers();
 
-        // Register commands
-        // this.commandManager = new PaperCommandManager<>(this); <-- if using cloud or similar
-        // getHandlers().forEach(this::registerCommandsForHandler);
+        emessenger = new EMessenger(gensConfig);
+        List<Handler> handlers = getHandlers();
+        handlers.forEach(this::registerCommandsForHandler);
     }
 
     @Override
@@ -172,7 +171,7 @@ public final class Generators extends JavaPlugin {
 
     private List<Handler> getHandlers() {
         return List.of(
-                new SellHandler(gensConfig, playerCache)
+                new SellHandler(gensConfig, playerCache, emessenger)
         );
     }
 
