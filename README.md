@@ -1,4 +1,4 @@
 > [!IMPORTANT]
 > This plugin is not stable and still in development! Many features will not work due to incomplete code.
 
-This is a gen core
+This is a gen core, code is located on master branch.
