@@ -1,4 +1,4 @@
-package me.yirf.generators.Handlers;
+package me.yirf.generators.hanlders;
 
 import me.yirf.generators.commands.ArgumentCommand;
 import me.yirf.generators.commands.sell.SellCommand;
@@ -9,7 +9,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class SellHandler implements Handler {

@@ -1,4 +1,4 @@
-package me.yirf.generators.Handlers;
+package me.yirf.generators.hanlders;
 
 import me.yirf.generators.commands.ArgumentCommand;
 

@@ -1,9 +1,9 @@
 package me.yirf.generators;
 
 import com.squareup.moshi.Moshi;
-import me.yirf.generators.Handlers.AdminHandler;
-import me.yirf.generators.Handlers.Handler;
-import me.yirf.generators.Handlers.SellHandler;
+import me.yirf.generators.hanlders.AdminHandler;
+import me.yirf.generators.hanlders.Handler;
+import me.yirf.generators.hanlders.SellHandler;
 import me.yirf.generators.data.*;
 import me.yirf.generators.generator.Gens;
 import me.yirf.generators.listeners.PlayerBlocks;
@@ -11,13 +11,11 @@ import me.yirf.generators.listeners.PlayerConnections;
 import me.yirf.generators.managers.DropManager;
 import me.yirf.generators.utils.EMessenger;
 import me.yirf.generators.utils.LocationAdapter;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;

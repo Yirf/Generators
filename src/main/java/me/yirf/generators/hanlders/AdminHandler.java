@@ -1,13 +1,11 @@
-package me.yirf.generators.Handlers;
+package me.yirf.generators.hanlders;
 
 import me.yirf.generators.Generators;
 import me.yirf.generators.commands.ArgumentCommand;
 import me.yirf.generators.commands.admin.ReloadCommand;
 import me.yirf.generators.utils.EMessenger;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
 import java.util.List;
 
 public class AdminHandler implements Handler {
