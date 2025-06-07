@@ -2,6 +2,7 @@ package me.yirf.generators.utils;
 
 import me.yirf.generators.managers.PersistentManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -63,16 +64,18 @@ public class ItemUtil {
             ItemStack item = new ItemStack(material);
             ItemMeta meta = item.getItemMeta();
 
-            List<Component> lore = config.getStringList(path).stream()
+            List<Component> lore = config.getStringList(path + ".lore").stream()
                     .map(line -> {
                         for (int i = 0; i < placeholders.size(); i++) {
-                            line = line.replace(placeholders.get(i), values.get(i));
+                            line = line.replace("<" + placeholders.get(i) + ">", values.get(i));
                         }
-                        return mini.deserialize(line);
+                        return mini.deserialize(line)
+                                .decoration(TextDecoration.ITALIC, false);
                     })
                     .toList();
 
-            Component fullName = mini.deserialize(config.getString(path).replaceAll("<name>", name));
+            Component fullName = mini.deserialize(config.getString(path + ".name").replaceAll("<name>", name))
+                    .decoration(TextDecoration.ITALIC, false);
 
             meta.lore(lore);
             meta.displayName(fullName);

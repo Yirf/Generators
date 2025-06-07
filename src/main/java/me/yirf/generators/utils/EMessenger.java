@@ -24,9 +24,9 @@ public class EMessenger {
     }
 
     public Component fromConfig(String path, List<String> placeholders, List<String> values) {
-        if (config.getStringList(path) != null) {
+        if (!config.getStringList(path).isEmpty()) {
             return configList(path, placeholders, values);
-        } else if (config.getString(path) != null) {
+        } else if (!config.getString(path).isEmpty()) {
             return configSingle(path, placeholders, values);
         } else {
             return miniMessage.deserialize("");
@@ -59,8 +59,6 @@ public class EMessenger {
 
     private Component configSingle(String path, List<String> placeholders, List<String> values) {
         String line = config.getString(path);
-
-        Bukkit.broadcastMessage("path: " + path + "| result: " + line);
 
         if (line.isEmpty()) {
             return miniMessage.deserialize("");

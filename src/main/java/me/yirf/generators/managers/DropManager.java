@@ -57,7 +57,7 @@ public class DropManager {
                         World world = loc.getWorld();
                         if (!world.isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) continue;
 
-                        ItemStack item = new ItemUtil.Creator(config, "item-layout.drops", gens.getName(id))
+                        ItemStack item = new ItemUtil.Creator(config, "item-layouts.drops", gens.getName(id))
                                 .setId(id)
                                 .setSell(gens.getSell(id))
                                 .setMaterial(gens.getDropMaterial(id))

@@ -132,7 +132,7 @@ public final class Generators extends JavaPlugin {
 
     private void registerListeners() {
         pm.registerEvents(new PlayerConnections(playerRepo, playerCache), this);
-        pm.registerEvents(new PlayerBlocks(playerCache, gensCache, gens), this);
+        pm.registerEvents(new PlayerBlocks(playerCache, gensCache, gens, config), this);
     }
 
     private void loadGenerators() {
