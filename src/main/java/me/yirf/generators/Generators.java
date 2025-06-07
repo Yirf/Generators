@@ -1,9 +1,9 @@
 package me.yirf.generators;
 
 import com.squareup.moshi.Moshi;
-import me.yirf.generators.hanlders.AdminHandler;
-import me.yirf.generators.hanlders.Handler;
-import me.yirf.generators.hanlders.SellHandler;
+import me.yirf.generators.handlers.AdminHandler;
+import me.yirf.generators.handlers.Handler;
+import me.yirf.generators.handlers.SellHandler;
 import me.yirf.generators.data.*;
 import me.yirf.generators.generator.Gens;
 import me.yirf.generators.listeners.PlayerBlocks;

@@ -1,6 +1,6 @@
 package me.yirf.generators.commands.sell;
 
-import me.yirf.generators.hanlders.SellHandler;
+import me.yirf.generators.handlers.SellHandler;
 import me.yirf.generators.commands.ArgumentCommand;
 import me.yirf.generators.managers.PersistentManager;
 import org.bukkit.configuration.file.FileConfiguration;

@@ -1,6 +1,6 @@
 package me.yirf.generators.commands.admin;
 
-import me.yirf.generators.hanlders.AdminHandler;
+import me.yirf.generators.handlers.AdminHandler;
 import me.yirf.generators.commands.ArgumentCommand;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.Command;

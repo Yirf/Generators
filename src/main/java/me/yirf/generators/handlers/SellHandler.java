@@ -1,4 +1,4 @@
-package me.yirf.generators.hanlders;
+package me.yirf.generators.handlers;
 
 import me.yirf.generators.commands.ArgumentCommand;
 import me.yirf.generators.commands.sell.SellCommand;
